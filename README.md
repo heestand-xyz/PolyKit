@@ -1,5 +1,10 @@
 # PolyKit
 
+Rounded Polygons in SwiftUI
+
+<img src="https://github.com/hexagons/PolyKit/blob/main/Assets/3.png?raw=true" height="100" /> &nbsp;&nbsp; <img src="https://github.com/hexagons/PolyKit/blob/main/Assets/4.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/hexagons/PolyKit/blob/main/Assets/5.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/hexagons/PolyKit/blob/main/Assets/6.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/hexagons/PolyKit/blob/main/Assets/7.png?raw=true" height="100" />
+
+
 ## Add to App
 
 - *File* / *Swift Packages* / *Add Package Dependecy*

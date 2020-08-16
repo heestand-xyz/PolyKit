@@ -3,18 +3,36 @@ import SwiftUI
 public struct Poly: View {
     
     let count: Int
-    let cornerRadius: CGFloat
+    
+    let constantCornerRadius: CGFloat?
+    let relativeCornerRadius: CGFloat?
     
     private var strokeLineWidth: CGFloat?
     
     public init(count: Int, cornerRadius: CGFloat = 0.0) {
         self.count = max(count, 3)
-        self.cornerRadius = max(cornerRadius, 0.0)
+        constantCornerRadius = max(cornerRadius, 0.0)
+        relativeCornerRadius = nil
+    }
+    
+    /// `relativeCornerRadius` is between `0.0` and `1.0`, where `0.0` is no corner radius and `1.0` is a circle.
+    public init(count: Int, relativeCornerRadius: CGFloat) {
+        self.count = max(count, 3)
+        constantCornerRadius = nil
+        self.relativeCornerRadius = min(max(relativeCornerRadius, 0.0), 1.0)
     }
     
     private init(count: Int, cornerRadius: CGFloat = 0.0, strokeLineWidth: CGFloat) {
         self.count = max(count, 3)
-        self.cornerRadius = max(cornerRadius, 0.0)
+        constantCornerRadius = max(cornerRadius, 0.0)
+        relativeCornerRadius = nil
+        self.strokeLineWidth = strokeLineWidth
+    }
+    
+    private init(count: Int, relativeCornerRadius: CGFloat, strokeLineWidth: CGFloat) {
+        self.count = max(count, 3)
+        constantCornerRadius = nil
+        self.relativeCornerRadius = min(max(relativeCornerRadius, 0.0), 1.0)
         self.strokeLineWidth = strokeLineWidth
     }
     
@@ -22,17 +40,22 @@ public struct Poly: View {
         
         GeometryReader { geo in
             
-            if cornerRadius == 0.0 || unitCornerRadius(size: geo.size) < 0.5 {
+            if cornerRadius(size: geo.size) == 0.0 {
                 
                 if let lineWidth: CGFloat = strokeLineWidth {
-                    Path { path in
-                        draw(on: &path, size: geo.size)
-                    }
-                    .stroke(lineWidth: lineWidth)
+                    Path { draw(on: &$0, size: geo.size) }
+                        .stroke(lineWidth: lineWidth)
                 } else {
-                    Path { path in
-                        draw(on: &path, size: geo.size)
-                    }
+                    Path { draw(on: &$0, size: geo.size) }
+                }
+                
+            } else if dynamicRelativeCornerRadius(size: geo.size) < 1.0 {
+                
+                if let lineWidth: CGFloat = strokeLineWidth {
+                    Path { drawRound(on: &$0, size: geo.size) }
+                        .stroke(lineWidth: lineWidth)
+                } else {
+                    Path { drawRound(on: &$0, size: geo.size) }
                 }
                 
             } else {
@@ -47,8 +70,8 @@ public struct Poly: View {
                             Circle()
                         }
                     }
-                        .frame(width: maxRadius(size: geo.size) * 2,
-                               height: maxRadius(size: geo.size) * 2)
+                    .frame(width: maxRadius(size: geo.size) * 2,
+                           height: maxRadius(size: geo.size) * 2)
                 }
                 
             }
@@ -61,34 +84,13 @@ public struct Poly: View {
         
         for i in 0..<count {
             
-            let prevPoint: CGPoint = point(angle: angle(index: CGFloat(i) - 1.0), size: size)
-            let currentPoint: CGPoint = point(angle: angle(index: CGFloat(i)), size: size)
-            let nextPoint: CGPoint = point(angle: angle(index: CGFloat(i) + 1.0), size: size)
-            
-            if cornerRadius == 0.0 {
-
-                if i == 0 {
-                    path.move(to: currentPoint)
-                }
-
-                path.addLine(to: nextPoint)
-
-            } else {
-                
-                let cornerCircle: RounedCornerCircle = rounedCornerCircle(leading: prevPoint, center: currentPoint, trailing: nextPoint, cornerRadius: cornerRadius)
-                
-                let startAngle = angle(index: CGFloat(i) - 0.5)
-                let startAngleInRadians: Angle = .radians(Double(startAngle) * .pi * 2.0)
-                let endAngle = angle(index: CGFloat(i) + 0.5)
-                let endAngleInRadians: Angle = .radians(Double(endAngle) * .pi * 2.0)
-                
-                path.addArc(center: cornerCircle.center,
-                            radius: cornerRadius,
-                            startAngle: startAngleInRadians,
-                            endAngle: endAngleInRadians,
-                            clockwise: false)
-                
+            if i == 0 {
+                let currentPoint: CGPoint = point(angle: angle(index: CGFloat(i)), size: size)
+                path.move(to: currentPoint)
             }
+            
+            let nextPoint: CGPoint = point(angle: angle(index: CGFloat(i) + 1.0), size: size)
+            path.addLine(to: nextPoint)
             
         }
         
@@ -96,8 +98,53 @@ public struct Poly: View {
         
     }
     
+    func drawRound(on path: inout Path, size: CGSize) {
+        
+        let aCornerRadius: CGFloat = cornerRadius(size: size)
+        
+        for i in 0..<count {
+            
+            let prevPoint: CGPoint = point(angle: angle(index: CGFloat(i) - 1.0), size: size)
+            let currentPoint: CGPoint = point(angle: angle(index: CGFloat(i)), size: size)
+            let nextPoint: CGPoint = point(angle: angle(index: CGFloat(i) + 1.0), size: size)
+            
+            let cornerCircle: RounedCornerCircle = rounedCornerCircle(leading: prevPoint,
+                                                                      center: currentPoint,
+                                                                      trailing: nextPoint,
+                                                                      cornerRadius: aCornerRadius)
+            
+            let startAngle = angle(index: CGFloat(i) - 0.5)
+            let startAngleInRadians: Angle = .radians(Double(startAngle) * .pi * 2.0)
+            let endAngle = angle(index: CGFloat(i) + 0.5)
+            let endAngleInRadians: Angle = .radians(Double(endAngle) * .pi * 2.0)
+            
+            path.addArc(center: cornerCircle.center,
+                        radius: aCornerRadius,
+                        startAngle: startAngleInRadians,
+                        endAngle: endAngleInRadians,
+                        clockwise: false)
+            
+        }
+        
+        path.closeSubpath()
+        
+    }
+    
+    func cornerRadius(size: CGSize) -> CGFloat {
+        if let constant: CGFloat = constantCornerRadius {
+            return constant
+        }
+        if let relative: CGFloat = relativeCornerRadius {
+            return relative * maxRadius(size: size)
+        }
+        return 0.0
+    }
+    
     public func stroke(lineWidth: CGFloat = 1.0) -> Poly {
-        Poly(count: count, cornerRadius: cornerRadius, strokeLineWidth: lineWidth)
+        if let constant: CGFloat = constantCornerRadius {
+            return Poly(count: count, cornerRadius: constant, strokeLineWidth: lineWidth)
+        }
+        return Poly(count: count, relativeCornerRadius: relativeCornerRadius ?? 0.0, strokeLineWidth: lineWidth)
     }
     
     func radius(size: CGSize) -> CGFloat {
@@ -114,6 +161,13 @@ public struct Poly: View {
         return CGPoint(x: x, y: y)
     }
     
+    func dynamicRelativeCornerRadius(size: CGSize) -> CGFloat {
+        guard let relative: CGFloat = relativeCornerRadius else {
+            return unitCornerRadius(size: size) * 2
+        }
+        return relative
+    }
+    
     func unitCornerRadius(size: CGSize) -> CGFloat {
         
         let prevPoint: CGPoint = point(angle: angle(index: -1.0), size: size)
@@ -124,7 +178,7 @@ public struct Poly: View {
                                              y: abs(nextPoint.y - currentPoint.y))
         let distance: CGFloat = sqrt(pow(pointDistance.x, 2.0) + pow(pointDistance.y, 2.0))
         
-        let cornerCircle: RounedCornerCircle = rounedCornerCircle(leading: prevPoint, center: currentPoint, trailing: nextPoint, cornerRadius: cornerRadius)
+        let cornerCircle: RounedCornerCircle = rounedCornerCircle(leading: prevPoint, center: currentPoint, trailing: nextPoint, cornerRadius: cornerRadius(size: size))
         
         let cornerPointDistance: CGPoint = CGPoint(x: abs(cornerCircle.trailing.x - currentPoint.x),
                                                    y: abs(cornerCircle.trailing.y - currentPoint.y))
@@ -217,7 +271,7 @@ public struct Poly: View {
         
         let L: CGFloat = sqrt(pow(dx, 2) + pow(dy, 2))
         let d: CGFloat = sqrt(pow(segment, 2) + pow(r, 2))
-    
+        
         let circlePoint: CGPoint = proportion(p, d, L, dx, dy)
         
         return RounedCornerCircle(center: circlePoint, leading: p1Cross, trailing: p2Cross)

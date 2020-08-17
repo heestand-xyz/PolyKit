@@ -77,6 +77,7 @@ public struct Poly: View {
             }
             
         }
+        .aspectRatio(1.0, contentMode: .fit)
         
     }
     

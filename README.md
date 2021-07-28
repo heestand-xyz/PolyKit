@@ -8,7 +8,7 @@ Rounded Polygons in SwiftUI
 ## Add to App
 
 - *File* / *Swift Packages* / *Add Package Dependecy*
-- Search for **PolyKit** by **hexagons**
+- Search for **PolyKit** by **heestand-xyz**
 - Add *Up to Next Major* from **1.0.0**
 
 ## Example

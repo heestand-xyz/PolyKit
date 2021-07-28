@@ -2,7 +2,7 @@
 
 Rounded Polygons in SwiftUI
 
-<img src="https://github.com/hexagons/PolyKit/blob/main/Assets/3.png?raw=true" height="100" /> &nbsp;&nbsp; <img src="https://github.com/hexagons/PolyKit/blob/main/Assets/4.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/hexagons/PolyKit/blob/main/Assets/5.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/hexagons/PolyKit/blob/main/Assets/6.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/hexagons/PolyKit/blob/main/Assets/7.png?raw=true" height="100" />
+<img src="https://github.com/heestand-xyz/PolyKit/blob/main/Assets/3.png?raw=true" height="100" /> &nbsp;&nbsp; <img src="https://github.com/heestand-xyz/PolyKit/blob/main/Assets/4.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/heestand-xyz/PolyKit/blob/main/Assets/5.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/heestand-xyz/PolyKit/blob/main/Assets/6.png?raw=true" height="100" /> &nbsp;&nbsp;&nbsp; <img src="https://github.com/heestand-xyz/PolyKit/blob/main/Assets/7.png?raw=true" height="100" />
 
 
 ## Add to App
@@ -27,5 +27,5 @@ struct ContentView: View {
 ## Add to Package
 
 ~~~~swift
-.package(url: "https://github.com/hexagons/PolyKit.git", from: "1.0.0")
+.package(url: "https://github.com/heestand-xyz/PolyKit.git", from: "1.0.0")
 ~~~~

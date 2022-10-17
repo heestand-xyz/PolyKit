@@ -17,7 +17,7 @@ public struct Polygon: Shape {
     }
     
     /// `relativeCornerRadius` is between `0.0` and `1.0`, where `0.0` is no corner radius and `1.0` is a circle.
-    public init(count: Int, relativeCornerRadius: CGFloat) {
+    public init(count: Int, relativeCornerRadius: CGFloat = 0.0) {
         self.count = max(count, 3)
         self.relativeCornerRadius = min(max(relativeCornerRadius, 0.0), 1.0)
     }

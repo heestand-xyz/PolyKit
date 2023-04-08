@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(*, deprecated, renamed: "Polygon")
 public struct Poly: View {
     
     let count: Int
@@ -8,7 +9,7 @@ public struct Poly: View {
     let relativeCornerRadius: CGFloat?
     
     private var strokeLineWidth: CGFloat?
-    
+
     public init(count: Int, cornerRadius: CGFloat = 0.0) {
         self.count = max(count, 3)
         constantCornerRadius = max(cornerRadius, 0.0)

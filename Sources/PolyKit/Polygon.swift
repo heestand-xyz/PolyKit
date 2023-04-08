@@ -5,21 +5,56 @@ public struct Polygon: Shape {
     
     let count: Int
     
-    var relativeCornerRadius: CGFloat
-    
-    public var animatableData: CGFloat {
-        get {
-            relativeCornerRadius
+    enum CornerRadius {
+        case relative(CGFloat)
+        case constant(CGFloat)
+        func relativeRadius(maxRadius: CGFloat) -> CGFloat {
+            switch self {
+            case .relative(let relativeRadius):
+                return relativeRadius
+            case .constant(let radius):
+                return radius / maxRadius
+            }
         }
-        set {
-            relativeCornerRadius = newValue
+        var animatablePair: AnimatablePair<CGFloat, CGFloat> {
+            get {
+                switch self {
+                case .relative(let relativeRadius):
+                    return AnimatablePair(0.0, relativeRadius)
+                case .constant(let radius):
+                    return AnimatablePair(1.0, radius)
+                }
+            }
+            set {
+                if newValue.first == 0.0 {
+                    self = .relative(newValue.second)
+                } else {
+                    self = .constant(newValue.second)
+                }
+            }
         }
     }
     
-    /// `relativeCornerRadius` is between `0.0` and `1.0`, where `0.0` is no corner radius and `1.0` is a circle.
-    public init(count: Int, relativeCornerRadius: CGFloat = 0.0) {
+    var cornerRadius: CornerRadius
+    
+    public var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get {
+            cornerRadius.animatablePair
+        }
+        set {
+            cornerRadius.animatablePair = newValue
+        }
+    }
+    
+    public init(count: Int, cornerRadius: CGFloat = 0.0) {
         self.count = max(count, 3)
-        self.relativeCornerRadius = min(max(relativeCornerRadius, 0.0), 1.0)
+        self.cornerRadius = .constant(max(cornerRadius, 0.0))
+    }
+    
+    /// `relativeCornerRadius` is between `0.0` and `1.0`, where `0.0` is a pure polygon and `1.0` is a circle.
+    public init(count: Int, relativeCornerRadius: CGFloat) {
+        self.count = max(count, 3)
+        self.cornerRadius = .relative(min(max(relativeCornerRadius, 0.0), 1.0))
     }
     
     public func path(in rect: CGRect) -> Path {
@@ -28,9 +63,10 @@ public struct Polygon: Shape {
         
         let size: CGSize = rect.size
         
-        let cornerRadius: CGFloat = cornerRadius(size: size)
+        let maxRadius = maxRadius(size: size)
+        let relativeCornerRadius = cornerRadius.relativeRadius(maxRadius: maxRadius)
        
-        if cornerRadius == 0.0 {
+        if relativeCornerRadius == 0.0 {
         
             for i in 0..<count {
                 
@@ -47,6 +83,8 @@ public struct Polygon: Shape {
             path.closeSubpath()
             
         } else if relativeCornerRadius < 1.0 {
+            
+            let cornerRadius: CGFloat = relativeCornerRadius * maxRadius
             
             for i in 0..<count {
                 
@@ -76,8 +114,8 @@ public struct Polygon: Shape {
             
         } else {
             
-            let circleSize = CGSize(width: maxRadius(size: size) * 2,
-                                    height: maxRadius(size: size) * 2)
+            let circleSize = CGSize(width: maxRadius * 2,
+                                    height: maxRadius * 2)
             let circleFrame = CGRect(origin: CGPoint(x: size.width / 2 - circleSize.width / 2,
                                                      y: size.height / 2 - circleSize.height / 2),
                                      size: circleSize)
@@ -85,10 +123,6 @@ public struct Polygon: Shape {
         }
         
         return path
-    }
-    
-    func cornerRadius(size: CGSize) -> CGFloat {
-        relativeCornerRadius * maxRadius(size: size)
     }
 
     func radius(size: CGSize) -> CGFloat {
@@ -118,7 +152,7 @@ public struct Polygon: Shape {
 
         let pointDistance: CGPoint = CGPoint(x: abs(midPoint.x - centerPoint.x),
                                              y: abs(midPoint.y - centerPoint.y))
-        let distance: CGFloat = sqrt(pow(pointDistance.x, 2.0) + pow(pointDistance.y, 2.0))
+        let distance: CGFloat = hypot(pointDistance.x, pointDistance.y)
 
         return distance
 

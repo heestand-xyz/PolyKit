@@ -9,7 +9,7 @@ Rounded Polygons in SwiftUI
 
 - *File* / *Swift Packages* / *Add Package Dependecy*
 - Search for **PolyKit** by **heestand-xyz**
-- Add *Up to Next Major* from **1.0.0**
+- Add *Up to Next Major* from **2.0.0**
 
 ## Example
 
@@ -19,7 +19,7 @@ import PolyKit
 
 struct ContentView: View {
     var body: some View {
-        Poly(count: 6, cornerRadius: 60)
+        Polygon(count: 6, cornerRadius: 60)
     }
 }
 ~~~~
@@ -27,5 +27,5 @@ struct ContentView: View {
 ## Add to Package
 
 ~~~~swift
-.package(url: "https://github.com/heestand-xyz/PolyKit.git", from: "1.0.0")
+.package(url: "https://github.com/heestand-xyz/PolyKit.git", from: "2.0.0")
 ~~~~
